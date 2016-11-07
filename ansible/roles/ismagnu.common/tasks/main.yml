@@ -1,0 +1,49 @@
+---
+# tasks file for ismagnu.common
+- name: Update apt cache
+  become: true
+  apt: update_cache=yes cache_valid_time=86400
+
+- name: Common dependencies
+  become: true
+  apt: name='{{ item }}' state=present
+  with_items:
+  - curl
+  - vim-nox
+  - build-essential
+  - htop
+  - iotop
+  - tree
+  - ack-grep
+  - less
+  - grc
+  - git
+  - sudo
+  - man
+  - screen
+  tags: [ prereq ]
+
+- name: Set default locale
+  become: true
+  locale_gen: name=en_US.UTF-8 state=present
+
+- name: Set default locale file
+  become: true
+  template: "src=default-locale.j2 dest=/etc/default/locale"
+  tags: [default-locale]
+
+- name: set /etc/localtime
+  become: true
+  command: "cp /usr/share/zoneinfo/{{ timezone }} /etc/localtime"
+  tags: [common,timezone]
+
+- name: set /etc/timezone
+  become: true
+  shell: echo "{{timezone}}" > /etc/timezone
+  tags: [common,timezone]
+
+# - name: Install custom dependencies
+#   become: true
+#   apt: name={{item}} state=present
+#   with_items: '{{ custom_pkgs }}'
+#   tags: [common, dependencies]

@@ -1,0 +1,40 @@
+---
+ansible_ssh_host: 192.168.70.10
+
+dbuser: vagrant
+dbpassword: vagrant
+
+databases:
+  - webuniongranada_development
+  - webuniongranada_test
+
+custom_pkgs:
+  - libsqlite3-dev
+  - libqt4-dev
+  - libqtwebkit-dev
+  - xvfb
+
+pg_version: 9.4
+
+rbenv:
+  env: user
+  version: v1.0.0
+  ruby_version: 2.3.1
+
+rbenv_users:
+  - vagrant
+
+nginx_official_repo: True
+nginx_http_params:
+  - sendfile on
+  - access_log /var/log/nginx/access.log
+nginx_sites:
+  webuniongranada:
+    - listen 80
+    - server_name wug.dev *.wug.dev webuniongranada.dev
+    - root /vagrant/wug/apps/webuniongranada
+    - location / { try_files $uri @ruby; }
+    - location @ruby { proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header Host $http_host; proxy_redirect off; proxy_pass http://webuniongranada; }
+nginx_configs:
+  upstream:
+    - upstream webuniongranada { server 127.0.0.1:8000; }
